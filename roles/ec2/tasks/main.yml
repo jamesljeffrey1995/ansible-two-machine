@@ -1,0 +1,33 @@
+---
+- name: retrieve instanceid and password
+  block:
+    - name: Get ec2 info
+      ec2_instance_info:
+        region:
+          eu-west-2
+        filters:
+          ip-address:
+            - 3.8.162.110
+      register: outs
+
+    - name: extract instance id
+      shell: |
+        dictionary=" {{ outs }} "
+        export dictionary
+        instanceid=$(python3 main.py)
+        export instanceid
+        echo $instanceid
+      register: instanceid
+
+    - name: retrieve password
+      ec2_win_password:
+        instance_id: "{{ instanceid.stdout }}"
+        region: eu-west-2
+        key_file: "../../jeff.pem"
+      register: ec2pass
+
+    - name: insert password into inventory
+      shell: echo ansible_password= "{{ ec2pass['win_password'] }}" >> inventory
+
+    - name: Refresh inventory
+      meta: refresh_inventory

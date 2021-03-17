@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - ec2
+
+- hosts: win
+  gather_facts: false
+  roles:
+    - LGPO
+
